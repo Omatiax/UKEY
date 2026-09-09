@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UKEY - Plataforma Musical Interativa</title>
+  <!-- Ícones Font Awesome para o violão e outros ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* FUNDO AQUARELA: gradiente gradual do azul para o laranja, com manchas suaves */
+    body {
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+      color: #2b3547;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(56,182,255,0.55) 0%, rgba(56,182,255,0) 45%),
+        radial-gradient(circle at 85% 15%, rgba(139,126,200,0.45) 0%, rgba(139,126,200,0) 50%),
+        radial-gradient(circle at 75% 80%, rgba(255,159,67,0.55) 0%, rgba(255,159,67,0) 50%),
+        radial-gradient(circle at 20% 85%, rgba(255,183,3,0.35) 0%, rgba(255,183,3,0) 45%),
+        linear-gradient(135deg, #bfe3ff 0%, #cdd6f4 30%, #f0d9d0 60%, #ffe3c2 100%);
+      background-attachment: fixed;
+    }
+    .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Cabeçalho do App com o Nome UKEY e Violão */
+    .brand-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+    .brand-title { font-size: 32px; font-weight: 800; letter-spacing: 2px; color: #ff9142; text-transform: uppercase; text-shadow: 0 1px 0 rgba(255,255,255,0.5); }
+    .brand-icon { width: 38px; height: 38px; transform: rotate(-15deg); flex-shrink: 0; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15)); }
+
+    /* Cartões em vidro translúcido sobre o fundo aquarela */
+    .search-bar-container { background-color: rgba(255,255,255,0.55); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px 16px; display: flex; gap: 12px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 20px rgba(60,90,140,0.12); }
+    .search-input-wrapper { flex: 1; display: flex; }
+    .search-input { width: 100%; background-color: rgba(255,255,255,0.8); border: 1px solid rgba(120,140,170,0.35); border-radius: 8px; padding: 10px 12px; color: #2b3547; font-size: 15px; outline: none; }
+    .btn-search { background: linear-gradient(135deg, #38b6ff, #ff9142); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .section-card { background-color: rgba(255,255,255,0.55); backdrop-filter: blur(10px); border-radius: 14px; padding: 20px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 20px rgba(60,90,140,0.10); }
+    .section-title { font-size: 16px; font-weight: bold; color: #2f7bb8; margin-bottom: 16px; }
+    .vocal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .exercise-card { background-color: rgba(255,255,255,0.65); border-radius: 10px; padding: 16px; border: 1px solid rgba(120,140,170,0.25); }
+    .exercise-card h4 { color: #ff9142; margin-bottom: 8px; }
+    .exercise-card p { color: #5a6c85; font-size: 12px; margin-bottom: 16px; }
+    .exercise-controls { display: flex; justify-content: space-between; align-items: center; }
+    .timer { font-weight: bold; font-size: 16px; color: #2f7bb8; font-family: monospace; }
+    .mini-btn { background-color: #e8eef5; border: 1px solid rgba(120,140,170,0.3); color: #2b3547; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .tab-bar { display: flex; gap: 20px; border-bottom: 1px solid rgba(120,140,170,0.3); padding-bottom: 12px; margin-bottom: 16px; }
+    .tab-item { background: none; border: none; color: #7d8ca3; font-weight: bold; cursor: pointer; }
+    .tab-item.active { color: #ff9142; }
+    .list-container { display: flex; flex-wrap: wrap; gap: 10px; }
+    .item-chip { background-color: rgba(255,255,255,0.7); border: 1px solid rgba(120,140,170,0.3); padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+    .song-header-card { background-color: rgba(255,255,255,0.55); backdrop-filter: blur(10px); border-radius: 14px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 20px rgba(60,90,140,0.10); }
+    .song-title-area h2 { font-size: 24px; color: #2b3547; display: flex; align-items: center; gap: 8px; }
+    .btn-fav { background: none; border: none; font-size: 20px; cursor: pointer; color: #a3b1c4; }
+    .btn-fav.active { color: #ff9142; }
+    .song-controls-area { display: flex; gap: 12px; align-items: center; }
+    .control-box { background-color: rgba(255,255,255,0.7); border: 1px solid rgba(120,140,170,0.3); border-radius: 8px; display: flex; align-items: center; padding: 4px; }
+    .control-btn { background: none; border: none; color: #2b3547; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
+    .control-val { padding: 0 12px; font-weight: bold; font-size: 14px; min-width: 40px; text-align: center; color: #2b3547; }
+    .btn-action { background-color: rgba(255,255,255,0.7); border: 1px solid rgba(120,140,170,0.3); color: #2b3547; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-action.active { background: linear-gradient(135deg, #38b6ff, #ff9142); color: #fff; border-color: transparent; }
+    .chords-display-card { background-color: rgba(255,255,255,0.55); backdrop-filter: blur(10px); border-radius: 14px; padding: 24px; border: 1px solid rgba(255,255,255,0.6); min-height: 250px; box-shadow: 0 4px 20px rgba(60,90,140,0.10); }
+    .chords-content { font-family: monospace; font-size: 15px; line-height: 1.8; white-space: pre-wrap; color: #2b3547; }
+    .chord-mark { color: #ff9142; font-weight: bold; }
+    .youtube-btn { position: fixed; bottom: 24px; right: 24px; background-color: #ff0000; color: #fff; border-radius: 50px; padding: 12px 22px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); text-decoration: none; font-weight: bold; font-size: 14px; z-index: 1000; }
+
+    /* MODAL COM A CIFRA EMBUTIDA (IFRAME) DO CIFRA CLUB */
+    .cifra-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(20,30,45,0.55); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+    .cifra-modal-overlay.open { display: flex; }
+    .cifra-modal-box { background: #fff; border-radius: 14px; width: 100%; max-width: 900px; height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+    .cifra-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(135deg, #38b6ff, #ff9142); color: #fff; }
+    .cifra-modal-header a { color: #fff; font-size: 13px; text-decoration: underline; }
+    .cifra-modal-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; line-height: 1; }
+    .cifra-modal-box iframe { flex: 1; border: none; width: 100%; }
+    .cifra-modal-fallback { padding: 16px; font-size: 13px; color: #5a6c85; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- MARCA UKEY COM ÍCONE DE VIOLÃO (SVG desenhado, não genérico) -->
+    <div class="brand-header">
+      <svg class="brand-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="violaoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#38b6ff"/>
+            <stop offset="100%" stop-color="#ff9142"/>
+          </linearGradient>
+        </defs>
+        <!-- braço -->
+        <rect x="29" y="2" width="6" height="22" rx="2" fill="url(#violaoGrad)"/>
+        <!-- tarraxas -->
+        <rect x="24" y="1" width="4" height="3" rx="1" fill="url(#violaoGrad)"/>
+        <rect x="36" y="1" width="4" height="3" rx="1" fill="url(#violaoGrad)"/>
+        <!-- trastes -->
+        <rect x="29" y="8" width="6" height="1" fill="#ffffff" opacity="0.6"/>
+        <rect x="29" y="12" width="6" height="1" fill="#ffffff" opacity="0.6"/>
+        <rect x="29" y="16" width="6" height="1" fill="#ffffff" opacity="0.6"/>
+        <!-- corpo (formato violão: dois círculos, cintura estreita) -->
+        <path d="M32 22
+                 C 20 22, 14 30, 15 40
+                 C 15.6 47, 21 54, 32 54
+                 C 43 54, 48.4 47, 49 40
+                 C 50 30, 44 22, 32 22 Z"
+              fill="url(#violaoGrad)"/>
+        <!-- boca do violão -->
+        <circle cx="32" cy="38" r="7" fill="#ffffff" opacity="0.9"/>
+        <circle cx="32" cy="38" r="7" fill="none" stroke="#2b3547" stroke-opacity="0.15" stroke-width="1.5"/>
+        <!-- cordas -->
+        <line x1="30" y1="4" x2="30" y2="54" stroke="#2b3547" stroke-opacity="0.25" stroke-width="0.8"/>
+        <line x1="34" y1="4" x2="34" y2="54" stroke="#2b3547" stroke-opacity="0.25" stroke-width="0.8"/>
+      </svg>
+      <h1 class="brand-title">UKEY</h1>
+    </div>
+
+    <div class="search-bar-container">
+      <div class="search-input-wrapper">
+        <input type="text" id="input-busca" class="search-input" placeholder="Digite o nome da música (ex: Porque Ele Vive)...">
+      </div>
+      <button class="btn-search" onclick="realizarBusca()">Buscar</button>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">🎙️ Aquecimento e Exercícios Vocais</div>
+      <div class="vocal-grid">
+        <div class="exercise-card">
+          <h4>1. Vibração de Lábios (Trrr)</h4>
+          <p>Relaxa a musculatura facial e aquece as pregas vocais.</p>
+          <div class="exercise-controls">
+            <span class="timer" id="timer-1">03:00</span>
+            <div>
+              <button class="mini-btn" onclick="toggleTimer(1, 180)">▶/❚❚</button>
+              <button class="mini-btn" onclick="resetTimer(1, 180)">↺</button>
+            </div>
+          </div>
+        </div>
+        <div class="exercise-card">
+          <h4>2. Humming (Mmmmm)</h4>
+          <p>Ativa os ressonadores da máscara facial e projeta o som.</p>
+          <div class="exercise-controls">
+            <span class="timer" id="timer-2">03:00</span>
+            <div>
+              <button class="mini-btn" onclick="toggleTimer(2, 180)">▶/❚❚</button>
+              <button class="mini-btn" onclick="resetTimer(2, 180)">↺</button>
+            </div>
+          </div>
+        </div>
+        <div class="exercise-card">
+          <h4>3. Sirene Vocal</h4>
+          <p>Deslize a voz do grave ao agudo e volta, como uma sirene, para ampliar a extensão vocal.</p>
+          <div class="exercise-controls">
+            <span class="timer" id="timer-3">02:00</span>
+            <div>
+              <button class="mini-btn" onclick="toggleTimer(3, 120)">▶/❚❚</button>
+              <button class="mini-btn" onclick="resetTimer(3, 120)">↺</button>
+            </div>
+          </div>
+        </div>
+        <div class="exercise-card">
+          <h4>4. Vibração de Língua (Rrrr)</h4>
+          <p>Alternativa ao trinado de lábios, relaxa a laringe e melhora o fluxo de ar.</p>
+          <div class="exercise-controls">
+            <span class="timer" id="timer-4">02:00</span>
+            <div>
+              <button class="mini-btn" onclick="toggleTimer(4, 120)">▶/❚❚</button>
+              <button class="mini-btn" onclick="resetTimer(4, 120)">↺</button>
+            </div>
+          </div>
+        </div>
+        <div class="exercise-card">
+          <h4>5. Respiração Diafragmática (Sopro em "Sssss")</h4>
+          <p>Sustente o som "Sssss" o máximo de tempo possível para fortalecer o controle de ar.</p>
+          <div class="exercise-controls">
+            <span class="timer" id="timer-5">01:30</span>
+            <div>
+              <button class="mini-btn" onclick="toggleTimer(5, 90)">▶/❚❚</button>
+              <button class="mini-btn" onclick="resetTimer(5, 90)">↺</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="tab-bar">
+        <button class="tab-item active" id="tab-fav" onclick="mostrarAba('fav')">★ Favoritas</button>
+        <button class="tab-item" id="tab-hist" onclick="mostrarAba('hist')">🕒 Histórico</button>
+      </div>
+      <div id="lista-persistent" class="list-container"></div>
+    </div>
+
+    <div class="song-header-card">
+      <div class="song-title-area">
+        <h2>
+          <span id="titulo-musica">SELECIONE UMA MÚSICA</span>
+          <button id="btn-favoritar" class="btn-fav" onclick="toggleFavorito()">★</button>
+        </h2>
+        <p id="artista-musica">Aguardando busca na Web...</p>
+      </div>
+      <div class="song-controls-area">
+        <div class="control-box">
+          <button class="control-btn" onclick="alterarTom(-1)">-</button>
+          <span class="control-val" id="tom-atual">C</span>
+          <button class="control-btn" onclick="alterarTom(1)">+</button>
+        </div>
+        <div class="control-box">
+          <button class="control-btn" onclick="alterarBPM(-5)">-</button>
+          <span class="control-val"><span id="bpm-atual">120</span> <small style="font-size:10px;">BPM</small></span>
+          <button class="control-btn" onclick="alterarBPM(5)">+</button>
+        </div>
+        <button class="btn-action" id="btn-click" onclick="toggleMetronomo()">⏱ Click</button>
+        <button class="btn-action" id="btn-pad" onclick="togglePad()">🎹 PAD</button>
+      </div>
+    </div>
+
+    <div class="chords-display-card">
+      <div id="cifra-conteudo" class="chords-content">Pesquise qualquer música para carregar o conteúdo automaticamente.</div>
+    </div>
+  </div>
+
+  <a id="youtube-floating-btn" href="#" target="_blank" rel="noopener noreferrer" class="youtube-btn">
+    <i class="fa-brands fa-youtube"></i>
+    <span>Ver no YouTube</span>
+  </a>
+
+  <!-- MODAL COM A CIFRA DO CIFRA CLUB EMBUTIDA DENTRO DO APP -->
+  <div id="cifra-modal-overlay" class="cifra-modal-overlay">
+    <div class="cifra-modal-box">
+      <div class="cifra-modal-header">
+        <span id="cifra-modal-titulo">Buscando cifra...</span>
+        <div>
+          <a id="cifra-modal-abrir-externo" href="#" target="_blank" rel="noopener noreferrer">Abrir em nova aba ↗</a>
+          &nbsp;&nbsp;
+          <button class="cifra-modal-close" onclick="fecharModalCifra()">✕</button>
+        </div>
+      </div>
+      <iframe id="cifra-modal-iframe" src="" title="Cifra Club"></iframe>
+      <div class="cifra-modal-fallback">
+        Se a cifra não aparecer aqui dentro (alguns sites bloqueiam ser exibidos assim), use o link "Abrir em nova aba" acima.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const NOTAS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const FREQS = { 'C': 130.81, 'C#': 138.59, 'D': 146.83, 'D#': 155.56, 'E': 164.81, 'F': 174.61, 'F#': 185.00, 'G': 196.00, 'G#': 207.65, 'A': 220.00, 'A#': 233.08, 'B': 246.94 };
+
+    let musicaAtual = { titulo: '', artista: '', tomOriginal: 'C', tomAtualIndex: 0, bpm: 120, textoBruto: '' };
+
+    // BUSCA: abre a cifra do Cifra Club EMBUTIDA dentro do próprio app, num modal com iframe
+    function realizarBusca() {
+      const termo = document.getElementById('input-busca').value.trim();
+      if (!termo) return;
+
+      salvarHistorico(termo);
+      abrirModalCifra(termo);
+    }
+
+    function abrirModalCifra(termo) {
+      const urlBusca = `https://www.cifraclub.com.br/search/?q=${encodeURIComponent(termo)}`;
+      document.getElementById('cifra-modal-titulo').textContent = termo;
+      document.getElementById('cifra-modal-abrir-externo').href = urlBusca;
+      document.getElementById('cifra-modal-iframe').src = urlBusca;
+      document.getElementById('cifra-modal-overlay').classList.add('open');
+    }
+
+    function fecharModalCifra() {
+      document.getElementById('cifra-modal-overlay').classList.remove('open');
+      document.getElementById('cifra-modal-iframe').src = '';
+    }
+
+    function transporAcorde(acorde, semitones) {
+      return acorde.replace(/([A-G][#b]?)/g, (match) => {
+        let idx = NOTAS.indexOf(match);
+        if (idx === -1) return match;
+        let novoIdx = (idx + semitones) % 12;
+        if (novoIdx < 0) novoIdx += 12;
+        return NOTAS[novoIdx];
+      });
+    }
+
+    function alterarTom(delta) {
+      musicaAtual.tomAtualIndex = (musicaAtual.tomAtualIndex + delta) % 12;
+      if (musicaAtual.tomAtualIndex < 0) musicaAtual.tomAtualIndex += 12;
+      document.getElementById('tom-atual').textContent = NOTAS[musicaAtual.tomAtualIndex];
+      renderizarCifra();
+      if (isPadActive) { pararPAD(); iniciarPAD(); }
+    }
+
+    function renderizarCifra() {
+      const container = document.getElementById('cifra-conteudo');
+      container.innerHTML = '';
+
+      const delta = musicaAtual.tomAtualIndex;
+      const linhas = musicaAtual.textoBruto.split('\n');
+
+      linhas.forEach(linha => {
+        const div = document.createElement('div');
+        div.innerHTML = linha.replace(/([A-G][#b]?[m\d\w\/\+]*)/g, m => `<span class="chord-mark">${transporAcorde(m, delta)}</span>`);
+        container.appendChild(div);
+      });
+
+      document.getElementById('titulo-musica').firstChild.textContent = musicaAtual.titulo.toUpperCase() + ' ';
+      document.getElementById('artista-musica').textContent = musicaAtual.artista;
+
+      const btnYt = document.getElementById('youtube-floating-btn');
+      btnYt.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(musicaAtual.titulo + ' ' + musicaAtual.artista)}`;
+      atualizarEstadoFavorito();
+    }
+
+    // AUDIO WEB (CLICK E PAD)
+    let audioCtx = null, isMetronomeActive = false, metronomeInterval = null, isPadActive = false, padOsc = null, padGain = null;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function alterarBPM(delta) {
+      musicaAtual.bpm = Math.max(40, Math.min(240, musicaAtual.bpm + delta));
+      document.getElementById('bpm-atual').textContent = musicaAtual.bpm;
+      if (isMetronomeActive) { clearInterval(metronomeInterval); iniciarMetronomo(); }
+    }
+
+    function toggleMetronomo() {
+      initAudio();
+      isMetronomeActive = !isMetronomeActive;
+      document.getElementById('btn-click').classList.toggle('active', isMetronomeActive);
+      if (isMetronomeActive) iniciarMetronomo(); else clearInterval(metronomeInterval);
+    }
+
+    function iniciarMetronomo() {
+      metronomeInterval = setInterval(() => {
+        let osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+        osc.frequency.value = 1000; g.gain.setValueAtTime(1, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+      }, (60 / musicaAtual.bpm) * 1000);
+    }
+
+    function togglePad() {
+      initAudio();
+      isPadActive = !isPadActive;
+      document.getElementById('btn-pad').classList.toggle('active', isPadActive);
+      if (isPadActive) iniciarPAD(); else pararPAD();
+    }
+
+    function iniciarPAD() {
+      const freq = FREQS[NOTAS[musicaAtual.tomAtualIndex]] || 130.81;
+      padOsc = audioCtx.createOscillator(); padGain = audioCtx.createGain();
+      padOsc.type = 'triangle'; padOsc.frequency.value = freq;
+      padGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+      padGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 1);
+      padOsc.connect(padGain); padGain.connect(audioCtx.destination);
+      padOsc.start();
+    }
+
+    function pararPAD() {
+      if (padGain) {
+        padGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        setTimeout(() => { try { padOsc.stop(); } catch(e){} }, 500);
+      }
+    }
+
+    // CONTAGEM REGRESSIVA DOS EXERCÍCIOS
+    const timers = {};
+    function toggleTimer(id, dur) {
+      if (!timers[id]) timers[id] = { t: dur, inv: null, run: false };
+      let obj = timers[id];
+      if (obj.run) { clearInterval(obj.inv); obj.run = false; }
+      else {
+        obj.run = true;
+        obj.inv = setInterval(() => {
+          if (obj.t > 0) { obj.t--; atualizarDisp(id, obj.t); }
+          else { clearInterval(obj.inv); obj.run = false; }
+        }, 1000);
+      }
+    }
+    function resetTimer(id, dur) {
+      if (timers[id]) { clearInterval(timers[id].inv); timers[id].run = false; timers[id].t = dur; }
+      atualizarDisp(id, dur);
+    }
+    function atualizarDisp(id, seg) {
+      document.getElementById(`timer-${id}`).textContent = `${String(Math.floor(seg/60)).padStart(2,'0')}:${String(seg%60).padStart(2,'0')}`;
+    }
+
+    // PERSISTÊNCIA LOCAL (FAVORITOS E HISTÓRICO)
+    let abaAtual = 'fav';
+    function obter(k) { return JSON.parse(localStorage.getItem(k)) || []; }
+    function salvar(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+    function salvarHistorico(item) {
+      let h = obter('app_hist').filter(x => x !== item);
+      h.unshift(item); salvar('app_hist', h.slice(0, 10));
+      if (abaAtual === 'hist') renderizarAba();
+    }
+
+    function toggleFavorito() {
+      if (!musicaAtual.titulo) return;
+      let f = obter('app_fav');
+      let idx = f.indexOf(musicaAtual.titulo);
+      if (idx >= 0) f.splice(idx, 1); else f.push(musicaAtual.titulo);
+      salvar('app_fav', f);
+      atualizarEstadoFavorito();
+      if (abaAtual === 'fav') renderizarAba();
+    }
+
+    function atualizarEstadoFavorito() {
+      let f = obter('app_fav');
+      document.getElementById('btn-favoritar').classList.toggle('active', f.includes(musicaAtual.titulo));
+    }
+
+    function mostrarAba(a) {
+      abaAtual = a;
+      document.getElementById('tab-fav').classList.toggle('active', a === 'fav');
+      document.getElementById('tab-hist').classList.toggle('active', a === 'hist');
+      renderizarAba();
+    }
+
+    function renderizarAba() {
+      const c = document.getElementById('lista-persistent'); c.innerHTML = '';
+      const d = obter(abaAtual === 'fav' ? 'app_fav' : 'app_hist');
+      if (!d.length) { c.innerHTML = '<span style="color:#788b9c;font-size:13px;">Sem registros.</span>'; return; }
+      d.forEach(x => {
+        let chip = document.createElement('div'); chip.className = 'item-chip'; chip.textContent = x;
+        chip.onclick = () => { document.getElementById('input-busca').value = x; realizarBusca(); };
+        c.appendChild(chip);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', renderizarAba);
+  </script>
+</body>
+</html>
